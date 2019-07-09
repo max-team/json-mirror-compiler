@@ -44,25 +44,6 @@ describe('lego-mirror: compiler', () => {
         expect(result.code).toContain('LegoMirrorUtil::set($newData, array(\'obj\'), array(\'a\' => 1));');
     });
 
-    it('cat action', () => {
-        const result = compile({
-            source: `{
-                "#/title": {
-                    "$from": "#/main_title",
-                    "$action": "cat",
-                    "$data": " - 标题"
-                },
-                "#/url": {
-                    "$from": "#/url",
-                    "$action": "cat",
-                    "$data": "#/main_title"
-                }
-            }`
-        });
-        expect(result.code).toContain(`LegoMirrorUtil::set($newData, array('title'), (isset($tplData['main_title']) ? $tplData['main_title'] : '') . (' - 标题'));`);
-        expect(result.code).toContain(`LegoMirrorUtil::set($newData, array('url'), (isset($tplData['url']) ? $tplData['url'] : '') . ($tplData['main_title']));`);
-    });
-
     it('copy action - object', () => {
         const result = compile({
             source: `{

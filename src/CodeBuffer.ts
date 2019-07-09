@@ -16,7 +16,7 @@ interface MirrorData {
 
 interface MirrorAction {
     $from: string;
-    $action?: 'cat' | 'copy' | 'merge';
+    $action?: 'copy' | 'merge';
     $data?: string | MirrorData;
 }
 
