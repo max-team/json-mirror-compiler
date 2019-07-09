@@ -20,8 +20,8 @@ LegoMirrorUtil::set($newData['legoData'], array('items', '1', 'data', $i), array
 LegoMirrorUtil::set($newData['legoData']['items']['1']['data'][$i], array('component'), 'img-text-icon');
 LegoMirrorUtil::set($newData['legoData']['items']['1']['data'][$i], array('data', '0', 'title'), $tplData['tellist'][$i]['tel']['0']['hot']);
 LegoMirrorUtil::set($newData['legoData']['items']['1']['data'][$i], array('data', '0', 'aaa'), 'tel');
-LegoMirrorUtil::set($newData['legoData']['items']['1']['data'][$i], array('data', '0', 'url'), 'tel:' . $tplData['tellist'][$i]['tel']['0']['hot'] . '');
-LegoMirrorUtil::set($newData['legoData']['items']['1']['data'][$i], array('data', '0', 'url2'), 'tel:' . $tplData['tellist'][$i]['tel']['0']['hot'] . 'abc ' . $tplData['tellist'][$i]['aa']['1']['sj'] . ' 666');
+LegoMirrorUtil::set($newData['legoData']['items']['1']['data'][$i], array('data', '0', 'url'), 'tel:' . $tplData['tellist'][$i]['tel']['0']['hot'] . 'abc ' . $tplData['tellist'][$i]['aa']['1']['sj'] . ' 666');
+LegoMirrorUtil::set($newData['legoData']['items']['1']['data'][$i], array('data', '0', 'url2'), 'tel:' . $tplData['tellist'][$i]['tel']['0']['hot'] . 'abc ' . $tplData['tellist'][$i]['aa']['1']['sj'] . ' 666 {{ cc/2/kkk}} 777 ');
 }
 }
 }

@@ -17,8 +17,9 @@
                             "#/component": "img-text-icon",
                             "#/data/0/title": "#/tel/0/hot",
                             "#/data/0/aaa": "tel",
-                            "#/data/0/url": "tel:{{tel/0/hot}}",
-                            "#/data/0/url2": "tel:{{ tel/0/hot }}abc {{aa/1/sj}} 666"
+                            "#/data/0/url": "tel:{{#/tel/0/hot}}",
+                            "#/data/0/url": "tel:{{ #/tel/0/hot }}abc {{ #/aa/1/sj}} 666",
+                            "#/data/0/url2": "tel:{{ #/tel/0/hot }}abc {{ #/aa/1/sj}} 666 {{ cc/2/kkk}} 777 "
                         }
                     }
                 }
