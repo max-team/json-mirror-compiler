@@ -1,4 +1,4 @@
-import {compile} from '../index';
+import {compile} from '../src/index';
 import {readFile, writeFile} from 'fs';
 import {promisify} from 'util';
 import {resolve} from 'path';
