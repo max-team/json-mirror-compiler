@@ -5,13 +5,14 @@
 
 import CodeBuffer, {Mirror} from './CodeBuffer';
 
-import {parse as JSON5parse} from 'json5';
-import {safeLoad} from 'js-yaml';
-
 const parsers = {
     json: JSON.parse,
-    json5: JSON5parse,
-    yaml: safeLoad
+    json5: function (source) {
+        return require('json5').parse(source);
+    },
+    yaml: function (source) {
+        return require('js-yaml').safeLoad(source);
+    }
 };
 
 export default function compile(

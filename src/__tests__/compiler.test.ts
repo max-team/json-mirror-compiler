@@ -44,23 +44,19 @@ describe('compiler', () => {
         expect(result.code).toContain('LegoMirrorUtil::set($newData, array(\'obj\'), array(\'a\' => 1));');
     });
 
-    it('cat action', () => {
+    it('string mustache', () => {
+
         const result = compile({
             source: `{
-                "#/title": {
-                    "$from": "#/main_title",
-                    "$action": "cat",
-                    "$data": " - 标题"
-                },
-                "#/url": {
-                    "$from": "#/url",
-                    "$action": "cat",
-                    "$data": "#/main_title"
-                }
+                "#/text1": "tel:{{#/tel/0/hot}}",
+                "#/text2": "tel:{{ #/tel/0/hot }}abc {{ #/aa/1/sj}} 666",
+                "#/text3": "tel:{{ #/tel/0/hot }}abc {{ #/aa/1/sj}} 666 {{ cc/2/kkk}} 777 "
             }`
         });
-        expect(result.code).toContain(`LegoMirrorUtil::set($newData, array('title'), (isset($tplData['main_title']) ? $tplData['main_title'] : '') . (' - 标题'));`);
-        expect(result.code).toContain(`LegoMirrorUtil::set($newData, array('url'), (isset($tplData['url']) ? $tplData['url'] : '') . ($tplData['main_title']));`);
+
+        expect(result.code).toContain('LegoMirrorUtil::set($newData, array(\'text1\'), \'tel:\' . $tplData[\'tel\'][\'0\'][\'hot\']);');
+        expect(result.code).toContain('LegoMirrorUtil::set($newData, array(\'text2\'), \'tel:\' . $tplData[\'tel\'][\'0\'][\'hot\'] . \'abc \' . $tplData[\'aa\'][\'1\'][\'sj\'] . \' 666\');');
+        expect(result.code).toContain('LegoMirrorUtil::set($newData, array(\'text3\'), \'tel:\' . $tplData[\'tel\'][\'0\'][\'hot\'] . \'abc \' . $tplData[\'aa\'][\'1\'][\'sj\'] . \' 666 {{ cc/2/kkk}} 777 \');');
     });
 
     it('copy action - object', () => {
