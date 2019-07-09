@@ -15,7 +15,7 @@ interface MirrorData {
 
 interface MirrorAction {
     $from: string;
-    $action?: 'copy' | 'merge';
+    $action?: 'copy';
     $data?: string | MirrorData;
 }
 
@@ -68,19 +68,20 @@ const tracer = 'ijkhlmn';
 
 export default class CodeBuffer {
 
+    private trackerIndex: number;
+
     buffer: Buffer;
-
     root: string;
+    filePath: string;
 
-    trackerIndex: number;
-
-    constructor(options?: {root?: string}) {
+    constructor(options?: {root?: string; filePath?: string}) {
         this.buffer = [{
             type: CodeType.line,
             code: '$newData = array()'
         }];
         this.trackerIndex = 0;
         this.root = options.root || '$tplData';
+        this.filePath = options.filePath;
     }
 
     transformGetter(path: string[], variable: string) {
@@ -210,11 +211,7 @@ export default class CodeBuffer {
             const { setter, getter } = this.getParams({from: fromPath, to});
             this.buffer.push({
                 type: CodeType.raw,
-                code: `if (isset(${getter})) {`
-            });
-            this.buffer.push({
-                type: CodeType.raw,
-                code: `if (!isset(${setter})) {`
+                code: `if (isset(${getter})) {\nif (!isset(${setter})) {`
             });
             this.fromConstant([], to, parentPath);
             this.buffer.push({
@@ -245,33 +242,22 @@ export default class CodeBuffer {
             ]});
             this.buffer.push({
                 type: CodeType.raw,
-                code: `if (isset(${getter})) {`
+                code: `if (isset(${getter})) {\nif (!empty(${getter}) && !isset(${getter}[0])) {\n${getter} = array(${getter});\n}`
             });
-
-            this.buffer.push({
-                type: CodeType.raw,
-                code: `if (!empty(${getter}) && !isset(${getter}[0])) {\n${getter} = array(${getter});\n}`
-            });
-
             if (data.$maxItems) {
                 this.buffer.push({
                     type: CodeType.raw,
                     code: `${getter} = array_slice(${getter}, 0, ${data.$maxItems});`
                 });
             }
-
             const tracerVar = `$${tracer[this.trackerIndex]}`;
             this.trackerIndex++;
 
             this.buffer.push({
                 type: CodeType.raw,
-                code: `foreach (${getter} as ${tracerVar} => $item) {`
+                code: `foreach (${getter} as ${tracerVar} => $item) {\nif (!isset(${setter}[${tracerVar}])) {`
             });
 
-            this.buffer.push({
-                type: CodeType.raw,
-                code: `if (!isset(${setter}[${tracerVar}])) {`
-            });
             this.fromConstant([], [...to, tracerVar], parentPath);
             this.buffer.push({
                 type: CodeType.raw,
@@ -323,6 +309,15 @@ export default class CodeBuffer {
                 }
             }
         }
+    }
+
+    addPreprocesser(preprocesser: string, getNamespace?: (file: string) => string) {
+        this.buffer.push({
+            type: CodeType.line,
+            code: `\
+require_once(dirname(__FILE__) . '/' . ${JSON.stringify(preprocesser)});
+${getNamespace(preprocesser)}process(${this.root});`
+        });
     }
 
     toString() {

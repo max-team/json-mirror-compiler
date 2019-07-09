@@ -19,7 +19,9 @@ export default function compile(
     options: {
         source: string,
         rootVar?: string,
-        format?: 'json' | 'json5' | 'yaml'
+        format?: 'json' | 'json5' | 'yaml',
+        filePath?: string,
+        getNamespace?: (file: string) => string
     }
 ): {code: string, errors?: object[]} {
 
@@ -28,7 +30,9 @@ export default function compile(
     const {
         source,
         rootVar,
-        format = 'json'
+        format = 'json',
+        filePath,
+        getNamespace
     } = options;
 
     try {
@@ -46,11 +50,18 @@ export default function compile(
     }
 
     const buffer = new CodeBuffer({
-        root: rootVar
+        root: rootVar,
+        filePath
     });
 
     if ('$title' in json) {
         delete json.$title;
+    }
+
+    if ('$preprocesser' in json) {
+        const preprocesser = json.$preprocesser;
+        buffer.addPreprocesser(preprocesser, getNamespace);
+        delete json.$preprocesser;
     }
 
     buffer.walk(json);
