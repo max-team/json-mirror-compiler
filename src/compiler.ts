@@ -5,10 +5,20 @@
 
 import CodeBuffer, {Mirror} from './CodeBuffer';
 
+import {parse as JSON5parse} from 'json5';
+import {safeLoad} from 'js-yaml';
+
+const parsers = {
+    json: JSON.parse,
+    json5: JSON5parse,
+    yaml: safeLoad
+};
+
 export default function compile(
     options: {
         source: string,
-        rootVar?: string
+        rootVar?: string,
+        format?: 'json' | 'json5' | 'yaml'
     }
 ): {code: string, errors?: object[]} {
 
@@ -16,11 +26,12 @@ export default function compile(
 
     const {
         source,
-        rootVar
+        rootVar,
+        format = 'json'
     } = options;
 
     try {
-        json = JSON.parse(source) as Mirror;
+        json = parsers[format](source) as Mirror;
     }
     catch (e) {
         console.error(`json parse error: ` + e.message);

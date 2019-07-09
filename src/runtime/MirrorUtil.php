@@ -8,27 +8,6 @@
 class LegoMirrorUtil {
 
     /**
-     * 根据 pointer 获取值
-     *
-     * @param {array} $obj
-     * @param {array} $path
-     */
-    static function get($obj, $path = array()) {
-        if (!isset($obj)) {
-            return;
-        }
-        $key = array_shift($path);
-        while ($key) {
-            if (!isset($obj) || !isset($obj[$key])) {
-                return;
-            }
-            $obj = $obj[$key];
-            $key = array_shift($path);
-        }
-        return $obj;
-    }
-
-    /**
      * 设置 pointer 获取值
      *
      * @param {array} $obj

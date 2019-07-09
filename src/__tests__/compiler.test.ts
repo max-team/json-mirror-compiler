@@ -5,7 +5,7 @@
 
 import { compile } from '../index';
 
-describe('lego-mirror: compiler', () => {
+describe('compiler', () => {
 
     it('prefix', () => {
         const result = compile({
