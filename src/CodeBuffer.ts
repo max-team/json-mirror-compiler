@@ -4,6 +4,7 @@
  */
 
 import json2php from './json2php';
+import chalk from 'chalk';
 
 const U = 'LegoMirrorUtil';
 
@@ -40,12 +41,27 @@ type Buffer = Array<{
     code: string
 }>
 
+/**
+ * 判断是否是 #/ 路径语法
+ *
+ * @param {any} s
+ */
 function isPointer(s: any) {
     return typeof s === 'string' && /^#\//.test(s);
 }
 
+/**
+ * 判断是否是 {{ }} mustache 语法，拼接变量与字符串
+ *
+ * @param {any} s
+ */
+function isMustache(s: any) {
+    return typeof s === 'string' && /{{.+?(?=}})/.test(s);
+}
+
 function getPath(str: string) {
-    return str.slice(2).split('/').filter(a => a);
+    let path = str.slice(2).split('/').filter(a => a);
+    return path;
 }
 
 
@@ -69,7 +85,8 @@ export default class CodeBuffer {
     }
 
     transformGetter(path: string[], variable: string) {
-        return `${variable}${path.map(p => `[${/^\$/.test(p) ? p : json2php(p)}]`).join('')}`;
+        let p = `${variable}${path.map(p => `[${/^\$/.test(p) ? p : json2php(p)}]`).join('')}`;
+        return p;
     }
 
     transfromSetter(to: string[], setter: string, content: string) {
@@ -94,18 +111,80 @@ export default class CodeBuffer {
 
     fromPath(from: string[], to: string[], parentPath?: ParentPath) {
         const { getter, setter } = this.getParams(parentPath);
-        this.buffer.push({
+        let p = {
             type: CodeType.line,
             code: this.transfromSetter(to, setter, this.transformGetter(from, getter))
-        });
+        };
+        this.buffer.push(p);
     }
 
     fromConstant(constant: any, to: string[], parentPath?: ParentPath) {
         const { setter } = this.getParams(parentPath);
-        this.buffer.push({
+        let p = {
             type: CodeType.line,
             code: this.transfromSetter(to, setter, json2php(constant))
+        };
+        this.buffer.push(p);
+    }
+
+    /**
+     * 解析 {{ }} 语法
+     *
+     * @param from
+     * @param to
+     * @param parentPath
+     */
+    fromMustache(from: string, to: string[], parentPath?: ParentPath) {
+        const { getter, setter } = this.getParams(parentPath);
+        let regExp = /{{.+?(?=}})/g;
+        // 通过正则匹配得到变量数组
+        let varArray = from.match(regExp);
+        // 总数组，包括常量和变量，需要记录顺序
+        let array = [];
+        // 临时字符串，每次循环都会改变；第一次为 from
+        let tmpStr = from;
+        for (let i = 0; i < varArray.length; i++) {
+            // 按变量进行分割，该数组只能有两个元素
+            let strArray = tmpStr.split(varArray[i]);
+            // 左边是常量，需要去除 }}，不能去除空格
+            array.push({
+                type: 'const',
+                val: strArray[0].replace('}}', '')
+            });
+            // 分隔符是变量，需要去除 {{，需要去除空格
+            array.push({
+                type: 'val',
+                val: varArray[i].replace('{{', '').trim()
+            });
+            // 右侧再次赋值给 tmpStr，进行下一次循环
+            tmpStr = strArray[1];
+        }
+        // 循环结束后，添加最后一个常量
+        array.push({
+            type: 'const',
+            val: tmpStr.replace('}}', '')
         });
+        // 拼接代码
+        let code = '';
+        for (let i = 0; i < array.length; i++) {
+            let item = array[i];
+            if (item.type === 'val') {
+                let valCode = this.transformGetter(getPath('#/' + item.val), getter);
+                code += i !== array.length - 1
+                    ? `${valCode} . `
+                    : valCode;
+            }
+            else {
+                code += i !== array.length - 1
+                    ? `'${item.val}' . `
+                    : `'${item.val}'`;
+            }
+        }
+        let p = {
+            type: CodeType.line,
+            code: this.transfromSetter(to, setter, code)
+        };
+        this.buffer.push(p);
     }
 
     addCat(from: string, to: string[], data: any, parentPath?: ParentPath) {
@@ -231,12 +310,18 @@ export default class CodeBuffer {
         for (let [to, from] of Object.entries(mirror)) {
             const toPath = getPath(to);
             if (typeof from === 'string') {
-                isPointer(from)
-                    ? this.fromPath(getPath(from as string), toPath, parentPath)
-                    : this.fromConstant(from, toPath, parentPath);
+                if (isPointer(from)) {
+                    this.fromPath(getPath(from as string), toPath, parentPath);
+                }
+                else if (isMustache(from)) {
+                    this.fromMustache(from, toPath, parentPath);
+                }
+                else {
+                    this.fromConstant(from, toPath, parentPath);
+                }
             }
             else if (
-                ['number', 'boolean', 'string'].includes(typeof from)
+                ['number', 'boolean'].includes(typeof from)
                 || Array.isArray(from)
                 || !(from as MirrorAction).$from
             ) {
