@@ -40,13 +40,15 @@ type Buffer = Array<{
     code: string
 }>
 
+const pointerReg = /^#\//;
+
 /**
  * 判断是否是 #/ 路径语法
  *
  * @param {any} s
  */
 function isPointer(s: any) {
-    return typeof s === 'string' && /^#\//.test(s);
+    return typeof s === 'string' && pointerReg.test(s);
 }
 
 /**
@@ -59,10 +61,20 @@ function isMustache(s: any) {
 }
 
 function getPath(str: string) {
-    let path = str.slice(2).split('/').filter(a => a);
+    let path = str.replace(pointerReg, '').split('/').filter(a => a);
     return path;
 }
 
+function getFromPath(str: string, parentPath: ParentPath) {
+    let path = getPath(str);
+    if (path[0] === '~') {
+        if (parentPath) {
+            parentPath.from = [];
+        }
+        return path.slice(1);
+    }
+    return path;
+}
 
 const tracer = 'ijkhlmn';
 
@@ -207,7 +219,7 @@ export default class CodeBuffer {
         }
 
         if ($type === 'object' && isPointer(from)) {
-            const fromPath = getPath(from);
+            let fromPath = getFromPath(from, parentPath);
             const { setter, getter } = this.getParams({from: fromPath, to});
             this.buffer.push({
                 type: CodeType.raw,
@@ -235,7 +247,7 @@ export default class CodeBuffer {
         }
 
         if ($type === 'array') {
-            const fromPath = getPath(from);
+            let fromPath = getFromPath(from, parentPath);
             const { setter, getter } = this.getParams({
                 from: [ ...parentPath.from, ...fromPath],
                 to: [ ...parentPath.to, ...to
@@ -281,7 +293,8 @@ export default class CodeBuffer {
             const toPath = getPath(to);
             if (typeof from === 'string') {
                 if (isPointer(from)) {
-                    this.fromPath(getPath(from as string), toPath, parentPath);
+                    let fromPath = getFromPath(from as string, parentPath);
+                    this.fromPath(fromPath, toPath, parentPath);
                 }
                 else if (isMustache(from)) {
                     this.fromMustache(from, toPath, parentPath);
@@ -313,14 +326,16 @@ export default class CodeBuffer {
 
     addPreprocesser(preprocesser: string, getNamespace?: (file: string) => string) {
         this.buffer.push({
-            type: CodeType.line,
+            type: CodeType.raw,
             code: `\
-require_once(dirname(__FILE__) . '/' . ${JSON.stringify(preprocesser)});
-${getNamespace(preprocesser)}process(${this.root});`
+require_once(dirname(__FILE__) . '/' . ${JSON.stringify(preprocesser.replace(/\.(ts|php)$/, '') + '.php')});
+${this.root} = array_merge(${this.root}, ${getNamespace(preprocesser)}\\process(${this.root}));`
         });
     }
 
     toString() {
-        return this.buffer.map(a => a.code + (a.type === CodeType.line ? ';' : '')).join('\n');
+        return this.buffer
+            .map(a => a.code + (a.type === CodeType.line ? ';' : ''))
+            .join('\n');
     }
 }
