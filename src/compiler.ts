@@ -3,7 +3,8 @@
  * @author cxtom(cxtom2008@gmail.com)
  */
 
-import CodeBuffer, {Mirror} from './CodeBuffer';
+import CodeBufferPHP from './php/CodeBuffer';
+import CodeBufferJS from './js/CodeBuffer';
 
 const parsers = {
     json: JSON.parse,
@@ -17,15 +18,16 @@ const parsers = {
 
 export default function compile(
     options: {
-        source: string,
-        rootVar?: string,
-        format?: 'json' | 'json5' | 'yaml',
-        filePath?: string,
-        getNamespace?: (file: string) => string
+        source: string;
+        rootVar?: string;
+        format?: 'json' | 'json5' | 'yaml';
+        filePath?: string;
+        getNamespace?: (file: string) => string;
     }
-): {code: string, errors?: object[]} {
+): {phpCode: string; jsCode: string; errors?: object[];} {
 
-    let json;
+    let jsonForPHP;
+    let jsonForJS;
 
     const {
         source,
@@ -36,12 +38,14 @@ export default function compile(
     } = options;
 
     try {
-        json = parsers[format](source) as Mirror;
+        // jsonForPHP = parsers[format](source) as Mirror;
+        jsonForJS = parsers[format](source) as Mirror;
     }
     catch (e) {
         console.error(`json parse error: ` + e.message);
         return {
-            code: '',
+            phpCode: '',
+            jsCode: '',
             errors: [{
                 code: 1,
                 message: 'json parse error: ' + e.message
@@ -49,27 +53,37 @@ export default function compile(
         };
     }
 
-    const buffer = new CodeBuffer({
+    // const phpBuffer = new CodeBufferPHP({
+    //     root: rootVar,
+    //     filePath
+    // });
+    const jsBuffer = new CodeBufferJS({
         root: rootVar,
         filePath
     });
 
-    if ('$title' in json) {
-        delete json.$title;
+    if ('$title' in jsonForJS) {
+        delete jsonForPHP.$title;
+        delete jsonForJS.$title;
     }
 
-    if ('$preprocesser' in json) {
-        const preprocesser = json.$preprocesser;
-        buffer.addPreprocesser(preprocesser, getNamespace);
-        delete json.$preprocesser;
+    if ('$preprocesser' in jsonForJS) {
+        const preprocesser = jsonForPHP.$preprocesser;
+        // phpBuffer.addPreprocesser(preprocesser, getNamespace);
+        jsBuffer.addPreprocesser(preprocesser, getNamespace);
+        // delete jsonForPHP.$preprocesser;
+        delete jsonForJS.$preprocesser;
     }
 
-    buffer.walk(json);
+    // phpBuffer.walk(jsonForPHP);
+    jsBuffer.walk(jsonForJS);
 
-    const code = buffer.toString();
+    // const phpCode = phpBuffer.toString();
+    const jsCode = jsBuffer.toString();
 
     return {
-        code,
+        phpCode: '',
+        jsCode,
         errors: []
     };
 
