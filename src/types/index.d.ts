@@ -20,3 +20,8 @@ interface ParentPath {
     from: string[];
     to: string[];
 }
+
+interface CodeBufferOptions {
+    root?: string;
+    filePath?: string;
+}

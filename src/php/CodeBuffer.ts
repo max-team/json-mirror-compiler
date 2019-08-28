@@ -33,7 +33,7 @@ export default class CodeBuffer {
     root: string;
     filePath: string;
 
-    constructor(options?: {root?: string; filePath?: string}) {
+    constructor(options?: CodeBufferOptions) {
         this.buffer = [{
             type: CodeType.line,
             code: '$newData = array()'
