@@ -3,22 +3,12 @@
  * @author cxtom(cxtom2008@gmail.com)
  */
 
-import CodeBufferPHP from './php/CodeBuffer';
-import CodeBufferJS from './js/CodeBuffer';
+import {compile as compileJS} from './js/index';
+import {compile as compilePHP} from './php/index';
 
-const parsers = {
-    json: JSON.parse,
-    json5: function (source) {
-        return require('json5').parse(source);
-    },
-    yaml: function (source) {
-        return require('js-yaml').safeLoad(source);
-    }
-};
-
-const codeBuffers = {
-    js: CodeBufferJS,
-    php: CodeBufferPHP
+const compilers = {
+    js: compileJS,
+    php: compilePHP
 };
 
 export default function compile(
@@ -56,8 +46,14 @@ export default function compile(
     }
 
     Object.keys(target).forEach(key => {
-        if (target[key] && codeBuffers[key]) {
-            const res = compileTarget(key as keyof typeof codeBuffers);
+        if (target[key] && compilers[key]) {
+            const res = compilers[key]({
+                source,
+                rootVar,
+                format,
+                filePath,
+                getNamespace
+            });
             code[key] = res.code;
             res.errors && errors.push(...res.errors);
         }
@@ -67,45 +63,6 @@ export default function compile(
         code,
         errors
     };
-
-    function compileTarget(target: keyof typeof codeBuffers): {code: string; errors?: object[];} {
-        const CodeBuffer = codeBuffers[target];
-        const buffer = new CodeBuffer({
-            root: rootVar,
-            filePath
-        });
-        let json: Mirror;
-    
-        try {
-            json = (parsers[format](source) as Mirror);
-        }
-        catch (e) {
-            console.error(`json parse error: ` + e.message);
-            return {
-                code: '',
-                errors: [{
-                    code: 1,
-                    message: 'json parse error: ' + e.message
-                }]
-            };
-        }
-    
-        if ('$title' in json) {
-            delete json.$title;
-        }
-    
-        if ('$preprocesser' in json) {
-            const preprocesser = json.$preprocesser;
-            buffer.addPreprocesser(preprocesser as string, getNamespace);
-            delete json.$preprocesser;
-        }
-        buffer.walk(json);
-        const code = buffer.toString();
-        return {
-            code,
-            errors: []
-        }
-    }
 }
 
 
