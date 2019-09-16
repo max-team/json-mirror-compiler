@@ -30,7 +30,7 @@ export default class CodeBuffer {
     constructor(options?: CodeBufferOptions) {
         this.buffer = [{
             type: CodeType.line,
-            code: '$newData = {}'
+            code: `var $newData = {}`
         }];
         this.trackerIndex = 0;
         this.root = options.root || '$tplData';
@@ -96,7 +96,7 @@ export default class CodeBuffer {
                 type: CodeType.raw,
                 code: `if (${getter} !== undefined) {\nif (${setter} === undefined) {`
             });
-            this.fromConstant([], to, parentPath);
+            this.fromConstant({}, to, parentPath);
             this.buffer.push({
                 type: CodeType.raw,
                 code: `}`
@@ -125,7 +125,7 @@ export default class CodeBuffer {
             ]});
             this.buffer.push({
                 type: CodeType.raw,
-                code: `if (${getter} !== undefined) {\nif (${getter} && ${getter}[0] === undefined) {\n${getter} = [${getter}];\n}`
+                code: `if (${getter} !== undefined) {\nif (Object.prototype.toString.call(${getter}) !== '[object Array]') {\n${getter} = [${getter}];\n}`
             });
             if (data.$maxItems) {
                 this.buffer.push({
@@ -141,7 +141,7 @@ export default class CodeBuffer {
                 code: `${getter}.forEach(function($item, ${tracerVar}) {\nif (${setter}[${tracerVar}] === undefined) {`
             });
 
-            this.fromConstant([], [...to, tracerVar], parentPath);
+            this.fromConstant({}, [...to, tracerVar], parentPath);
             this.buffer.push({
                 type: CodeType.raw,
                 code: `}`
