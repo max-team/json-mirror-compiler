@@ -1,5 +1,6 @@
 import CodeBuffer from './CodeBuffer';
 import {compileTarget} from '../common';
+import * as mirrorUtil from './runtime/MirrorUtil';
 
 export function compile(
     options: {
@@ -33,3 +34,4 @@ export function compile(
         errors
     };
 }
+export const legoMirrorUtil = mirrorUtil;
