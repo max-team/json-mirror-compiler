@@ -1,5 +1,14 @@
-export function get() {
-
+export function get(obj: any, path: string[]) {
+    let target = obj;
+    try {
+        path.forEach((key, index) => {
+            target = target[key];
+        });
+    }
+    catch(e) {
+        return undefined;
+    }
+    return target;
 }
 
 export function set(obj: any, path: string[], value: any) {

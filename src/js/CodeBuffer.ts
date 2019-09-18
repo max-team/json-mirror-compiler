@@ -91,7 +91,7 @@ export default class CodeBuffer {
 
         if ($type === 'object' && isPointer(from)) {
             let fromPath = getFromPath(from, parentPath);
-            const { setter, getter } = this.getParams({from: fromPath, to});
+            const { setter, getter } = this.getParams({from: fromPath, to}, true);
             this.buffer.push({
                 type: CodeType.raw,
                 code: `if (${getter} !== undefined) {\nif (${setter} === undefined) {`
@@ -121,11 +121,16 @@ export default class CodeBuffer {
             let fromPath = getFromPath(from, parentPath);
             const { setter, getter } = this.getParams({
                 from: [ ...parentPath.from, ...fromPath],
-                to: [ ...parentPath.to, ...to
-            ]});
+                to: [ ...parentPath.to, ...to]
+            });
+
+            const { getter: sGetter } = this.getParams({
+                from: [ ...parentPath.from, ...fromPath],
+                to: [ ...parentPath.to, ...to]
+            }, true);
             this.buffer.push({
                 type: CodeType.raw,
-                code: `if (${getter} !== undefined) {\nif (Object.prototype.toString.call(${getter}) !== '[object Array]') {\n${getter} = [${getter}];\n}`
+                code: `if (${sGetter} !== undefined) {\nif (Object.prototype.toString.call(${getter}) !== '[object Array]') {\n${getter} = [${getter}];\n}`
             });
             if (data.$maxItems) {
                 this.buffer.push({
@@ -136,9 +141,14 @@ export default class CodeBuffer {
             const tracerVar = `$${tracer[this.trackerIndex]}`;
             this.trackerIndex++;
 
+            const { setter: sSetter } = this.getParams({
+                from: [ ...parentPath.from, ...fromPath],
+                to: [ ...parentPath.to, ...to, tracerVar]
+            }, true);
+
             this.buffer.push({
                 type: CodeType.raw,
-                code: `${getter}.forEach(function($item, ${tracerVar}) {\nif (${setter}[${tracerVar}] === undefined) {`
+                code: `${getter}.forEach(function($item, ${tracerVar}) {\nif (${sSetter} === undefined) {`
             });
 
             this.fromConstant({}, [...to, tracerVar], parentPath);
@@ -240,24 +250,30 @@ export default class CodeBuffer {
         this.buffer.push(p);
     }
 
-    getParams(parentPath?: ParentPath) {
+    getParams(parentPath?: ParentPath, isSecure = false) {
 
         let getter = this.root;
         let setter = '$newData';
 
         if (parentPath && parentPath.from.length > 0) {
-            getter = this.transformGetter(parentPath.from, getter);
+            getter = this.transformGetter(parentPath.from, getter, isSecure);
         }
 
         if (parentPath && parentPath.to.length > 0) {
-            setter = this.transformGetter(parentPath.to, setter);
+            setter = this.transformGetter(parentPath.to, setter, isSecure);
         }
 
         return { getter, setter };
     }
 
-    transformGetter(path: string[], variable: string) {
-        let p = `${variable}${path.map(p => `[${/^\$/.test(p) ? p : json2js(p)}]`).join('')}`;
+    transformGetter(path: string[], variable: string, isSecure = false) {
+        let p = '';
+        if (isSecure) {
+            p = `${U}.get(${variable}, [${path.map(t => /^\$/.test(t) ? t : json2js(t)).join(', ')}])`;
+        }
+        else {
+            p = `${variable}${path.map(p => `[${/^\$/.test(p) ? p : json2js(p)}]`).join('')}`;
+        }
         return p;
     }
 
