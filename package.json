@@ -1,6 +1,6 @@
 {
   "name": "json-mirror-compiler",
-  "version": "0.1.0",
+  "version": "0.2.0-beta.8",
   "description": "json mirror compiler",
   "keywords": [
     "mirror",
@@ -9,6 +9,7 @@
   "author": "cxtom <cxtom2008@gmail.com>",
   "license": "ISC",
   "main": "lib/index.js",
+  "browser": "lib/js/index.js",
   "typings": "lib/index.d.ts",
   "files": [
     "lib"
@@ -18,7 +19,7 @@
     "url": "https://github.com/max-team/json-mirror-compiler.git"
   },
   "scripts": {
-    "build": "tsc && cp src/runtime/MirrorUtil.php lib/runtime/",
+    "build": "tsc && mkdir lib/php/runtime && cp src/php/runtime/MirrorUtil.php lib/php/runtime/",
     "test": "jest"
   },
   "dependencies": {

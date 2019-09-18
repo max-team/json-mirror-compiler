@@ -4,31 +4,14 @@
  */
 
 import json2php from './json2php';
+import {
+    isMustache,
+    isPointer,
+    getFromPath,
+    getPath
+} from '../utils';
 
 const U = 'LegoMirrorUtil';
-
-interface MirrorData {
-    $type: 'array' | 'object';
-    $mirror: Mirror;
-    $maxItems?: number;
-}
-
-interface MirrorAction {
-    $from: string;
-    $action?: 'copy';
-    $data?: string | MirrorData;
-}
-
-type Constant = string | number | boolean | object | any[];
-
-interface ParentPath {
-    from: string[];
-    to: string[];
-}
-
-export interface Mirror {
-    [key: string]: string | Constant | MirrorAction;
-}
 
 enum CodeType {
     line,
@@ -40,42 +23,6 @@ type Buffer = Array<{
     code: string
 }>
 
-const pointerReg = /^#\//;
-
-/**
- * 判断是否是 #/ 路径语法
- *
- * @param {any} s
- */
-function isPointer(s: any) {
-    return typeof s === 'string' && pointerReg.test(s);
-}
-
-/**
- * 判断是否是 {{ }} mustache 语法，拼接变量与字符串
- *
- * @param {any} s
- */
-function isMustache(s: any) {
-    return typeof s === 'string' && /{{\s*#\/.+?(?=}})/.test(s);
-}
-
-function getPath(str: string) {
-    let path = str.replace(pointerReg, '').split('/').filter(a => a);
-    return path;
-}
-
-function getFromPath(str: string, parentPath: ParentPath) {
-    let path = getPath(str);
-    if (path[0] === '~') {
-        if (parentPath) {
-            parentPath.from = [];
-        }
-        return path.slice(1);
-    }
-    return path;
-}
-
 const tracer = 'ijkhlmn';
 
 export default class CodeBuffer {
@@ -86,7 +33,7 @@ export default class CodeBuffer {
     root: string;
     filePath: string;
 
-    constructor(options?: {root?: string; filePath?: string}) {
+    constructor(options?: CodeBufferOptions) {
         this.buffer = [{
             type: CodeType.line,
             code: '$newData = array()'
