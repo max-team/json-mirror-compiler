@@ -3,75 +3,66 @@
  * @author cxtom(cxtom2008@gmail.com)
  */
 
-import CodeBuffer, {Mirror} from './CodeBuffer';
+import {compile as compileJS} from './js/index';
+import {compile as compilePHP} from './php/index';
 
-const parsers = {
-    json: JSON.parse,
-    json5: function (source) {
-        return require('json5').parse(source);
-    },
-    yaml: function (source) {
-        return require('js-yaml').safeLoad(source);
-    }
+const compilers = {
+    js: compileJS,
+    php: compilePHP
 };
 
 export default function compile(
     options: {
-        source: string,
-        rootVar?: string,
-        format?: 'json' | 'json5' | 'yaml',
-        filePath?: string,
-        getNamespace?: (file: string) => string
+        source: string;
+        rootVar?: string;
+        format?: 'json' | 'json5' | 'yaml';
+        filePath?: string;
+        target?: {
+            php: boolean;
+            js: boolean;
+        },
+        getNamespace?: (file: string) => string;
     }
-): {code: string, errors?: object[]} {
+): {code: {[key: string]: string}; errors?: object[];} {
 
-    let json;
+    let errors = [];
+    let code = {};
 
     const {
         source,
         rootVar,
         format = 'json',
         filePath,
+        target = {php: true, js: true},
         getNamespace
     } = options;
 
-    try {
-        json = parsers[format](source) as Mirror;
-    }
-    catch (e) {
-        console.error(`json parse error: ` + e.message);
+    if (!Object.keys(target).find(key => target[key])) {
+        console.error('please specify at least one target');
         return {
-            code: '',
-            errors: [{
-                code: 1,
-                message: 'json parse error: ' + e.message
-            }]
+            code: {},
+            errors: []
         };
     }
 
-    const buffer = new CodeBuffer({
-        root: rootVar,
-        filePath
+    Object.keys(target).forEach(key => {
+        if (target[key] && compilers[key]) {
+            const res = compilers[key]({
+                source,
+                rootVar,
+                format,
+                filePath,
+                getNamespace
+            });
+            code[key] = res.code;
+            res.errors && errors.push(...res.errors);
+        }
     });
-
-    if ('$title' in json) {
-        delete json.$title;
-    }
-
-    if ('$preprocesser' in json) {
-        const preprocesser = json.$preprocesser;
-        buffer.addPreprocesser(preprocesser, getNamespace);
-        delete json.$preprocesser;
-    }
-
-    buffer.walk(json);
-
-    const code = buffer.toString();
 
     return {
         code,
-        errors: []
+        errors
     };
-
 }
+
 
