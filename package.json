@@ -1,6 +1,6 @@
 {
   "name": "json-mirror-compiler",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "json mirror compiler",
   "keywords": [
     "mirror",
