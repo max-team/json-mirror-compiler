@@ -19,6 +19,7 @@
     "url": "https://github.com/max-team/json-mirror-compiler.git"
   },
   "scripts": {
+    "prepublishOnly": "npm test && npm run build",
     "build": "tsc && mkdir lib/php/runtime && cp src/php/runtime/MirrorUtil.php lib/php/runtime/",
     "test": "jest"
   },
