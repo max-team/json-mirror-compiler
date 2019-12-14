@@ -115,4 +115,24 @@ describe('compiler', () => {
         });
         expect(result.code.js).toContain(`$tplData['objB'] = $tplData['objB'].slice(0, 3);`);
     });
+
+    it('copy action - array use root', () => {
+        const result = compile({
+            source: `{
+                "#/arrA": {
+                    "$from": "#/objB",
+                    "$data": {
+                        "$type": "array",
+                        "$mirror": {
+                            "#/title": "#/main_title",
+                            "#/image": "#/~/image",
+                            "#/des": "#/des"
+                        }
+                    }
+                }
+            }`
+        });
+        expect(result.code.js).toContain(`legoMirrorUtil.set($newData['arrA'][$i], ['image'], $tplData['image']);`);
+        expect(result.code.js).toContain(`legoMirrorUtil.set($newData['arrA'][$i], ['des'], $tplData['objB'][$i]['des']);`);
+    });
 });

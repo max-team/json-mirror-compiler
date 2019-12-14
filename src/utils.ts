@@ -25,11 +25,13 @@ export function getPath(str: string) {
 
 export function getFromPath(str: string, parentPath: ParentPath) {
     let path = getPath(str);
+    let isRoot = false;
     if (path[0] === '~') {
-        if (parentPath) {
-            parentPath.from = [];
-        }
-        return path.slice(1);
+        isRoot = true;
+        path = path.slice(1);
     }
-    return path;
+    return {
+        path,
+        parentPath: parentPath ? (isRoot ? { ...parentPath, from: [] } : { ...parentPath }) : parentPath
+    };
 }

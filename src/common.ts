@@ -50,11 +50,16 @@ export function compileTarget(
         delete json.$title;
     }
 
+    if ('$template' in json) {
+        delete json.$template;
+    }
+
     if ('$preprocesser' in json) {
         const preprocesser = json.$preprocesser;
         buffer.addPreprocesser(preprocesser as string, getNamespace);
         delete json.$preprocesser;
     }
+
     buffer.walk(json);
     const code = buffer.toString();
     return {

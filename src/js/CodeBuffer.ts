@@ -43,7 +43,7 @@ export default class CodeBuffer {
             if (typeof from === 'string') {
                 if (isPointer(from)) {
                     let fromPath = getFromPath(from as string, parentPath);
-                    this.fromPath(fromPath, toPath, parentPath);
+                    this.fromPath(fromPath.path, toPath, fromPath.parentPath);
                 }
                 else if (isMustache(from)) {
                     this.fromMustache(from, toPath, parentPath);
@@ -90,20 +90,20 @@ export default class CodeBuffer {
         }
 
         if ($type === 'object' && isPointer(from)) {
-            let fromPath = getFromPath(from, parentPath);
-            const { setter, getter } = this.getParams({from: fromPath, to}, true);
+            const fromPath = getFromPath(from, parentPath);
+            const { setter, getter } = this.getParams({ from: fromPath.path, to }, true);
             this.buffer.push({
                 type: CodeType.raw,
                 code: `if (${getter} !== undefined) {\nif (${setter} === undefined) {`
             });
-            this.fromConstant({}, to, parentPath);
+            this.fromConstant({}, to, fromPath.parentPath);
             this.buffer.push({
                 type: CodeType.raw,
                 code: `}`
             });
             this.walk($mirror, {
-                from: [ ...parentPath.from, ...fromPath],
-                to: [ ...parentPath.to, ...to ]
+                from: [ ...fromPath.parentPath.from, ...fromPath.path ],
+                to: [ ...fromPath.parentPath.to, ...to ]
             });
             this.buffer.push({
                 type: CodeType.raw,
@@ -120,13 +120,13 @@ export default class CodeBuffer {
         if ($type === 'array') {
             let fromPath = getFromPath(from, parentPath);
             const { setter, getter } = this.getParams({
-                from: [ ...parentPath.from, ...fromPath],
-                to: [ ...parentPath.to, ...to]
+                from: [ ...fromPath.parentPath.from, ...fromPath.path],
+                to: [ ...fromPath.parentPath.to, ...to]
             });
 
             const { getter: sGetter } = this.getParams({
-                from: [ ...parentPath.from, ...fromPath],
-                to: [ ...parentPath.to, ...to]
+                from: [ ...fromPath.parentPath.from, ...fromPath.path],
+                to: [ ...fromPath.parentPath.to, ...to]
             }, true);
             this.buffer.push({
                 type: CodeType.raw,
@@ -142,8 +142,8 @@ export default class CodeBuffer {
             this.trackerIndex++;
 
             const { setter: sSetter } = this.getParams({
-                from: [ ...parentPath.from, ...fromPath],
-                to: [ ...parentPath.to, ...to, tracerVar]
+                from: [ ...fromPath.parentPath.from, ...fromPath.path],
+                to: [ ...fromPath.parentPath.to, ...to, tracerVar]
             }, true);
 
             this.buffer.push({
@@ -151,15 +151,15 @@ export default class CodeBuffer {
                 code: `${getter}.forEach(function($item, ${tracerVar}) {\nif (${sSetter} === undefined) {`
             });
 
-            this.fromConstant({}, [...to, tracerVar], parentPath);
+            this.fromConstant({}, [...to, tracerVar], fromPath.parentPath);
             this.buffer.push({
                 type: CodeType.raw,
                 code: `}`
             });
 
             this.walk($mirror, {
-                from: [ ...parentPath.from, ...fromPath, tracerVar],
-                to: [ ...parentPath.to, ...to, tracerVar ]
+                from: [ ...fromPath.parentPath.from, ...fromPath.path, tracerVar],
+                to: [ ...fromPath.parentPath.to, ...to, tracerVar ]
             });
 
             this.buffer.push({
