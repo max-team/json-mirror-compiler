@@ -72,8 +72,8 @@ describe('compiler', () => {
                 }
             }`
         });
-        expect(result.code.js).toContain('if (legoMirrorUtil.get($tplData, [\'objB\']) !== undefined)');
-        expect(result.code.js).toContain('if (legoMirrorUtil.get($newData, [\'objA\']) === undefined)');
+        expect(result.code.js).toContain('if (legoMirrorUtil.get($tplData, [\'objB\']) != null)');
+        expect(result.code.js).toContain('if (legoMirrorUtil.get($newData, [\'objA\']) == null)');
         expect(result.code.js).toContain(`legoMirrorUtil.set($newData, ['objA'], {});`);
         expect(result.code.js).toContain(`legoMirrorUtil.set($newData['objA'], ['title'], $tplData['objB']['main_title']);`);
 
@@ -94,7 +94,7 @@ describe('compiler', () => {
                 }
             }`
         });
-        expect(result.code.js).toContain(`if (legoMirrorUtil.get($tplData, ['objB']) !== undefined) {\nif (Object.prototype.toString.call($tplData['objB']) !== '[object Array]') {\n$tplData['objB'] = [$tplData['objB']];`);
+        expect(result.code.js).toContain(`if (legoMirrorUtil.get($tplData, ['objB']) != null) {\nif (!Array.isArray($tplData['objB'])) {\n$tplData['objB'] = [$tplData['objB']];`);
         expect(result.code.js).toContain(`legoMirrorUtil.set($newData, ['arrA', $i], {});`);
     });
 

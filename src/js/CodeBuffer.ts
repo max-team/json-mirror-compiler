@@ -3,7 +3,7 @@ import {
     isPointer,
     getFromPath,
     isMustache
-} from "../utils";
+} from '../utils';
 import json2js from './json2js';
 
 enum CodeType {
@@ -94,7 +94,7 @@ export default class CodeBuffer {
             const { setter, getter } = this.getParams({ from: fromPath.path, to }, true);
             this.buffer.push({
                 type: CodeType.raw,
-                code: `if (${getter} !== undefined) {\nif (${setter} === undefined) {`
+                code: `if (${getter} != null) {\nif (${setter} == null) {`
             });
             this.fromConstant({}, to, fromPath.parentPath);
             this.buffer.push({
@@ -130,7 +130,7 @@ export default class CodeBuffer {
             }, true);
             this.buffer.push({
                 type: CodeType.raw,
-                code: `if (${sGetter} !== undefined) {\nif (Object.prototype.toString.call(${getter}) !== '[object Array]') {\n${getter} = [${getter}];\n}`
+                code: `if (${sGetter} != null) {\nif (!Array.isArray(${getter})) {\n${getter} = [${getter}];\n}`
             });
             if (data.$maxItems) {
                 this.buffer.push({
@@ -148,7 +148,7 @@ export default class CodeBuffer {
 
             this.buffer.push({
                 type: CodeType.raw,
-                code: `${getter}.forEach(function($item, ${tracerVar}) {\nif (${sSetter} === undefined) {`
+                code: `${getter}.forEach(function($item, ${tracerVar}) {\nif (${sSetter} == null) {`
             });
 
             this.fromConstant({}, [...to, tracerVar], fromPath.parentPath);
@@ -281,18 +281,26 @@ export default class CodeBuffer {
         return `${U}.set(${setter}, [${to.map(t => /^\$/.test(t) ? t : json2js(t)).join(', ')}], ${content})`
     }
 
-    addPreprocesser(preprocesser: string, getNamespace?: (file: string) => string) {
+    addPreprocesser(preprocesser: string) {
         this.buffer.push({
             type: CodeType.raw,
-            code: `\
-require_once(dirname(__FILE__) . '/' . ${JSON.stringify(preprocesser.replace(/\.(ts|php)$/, '') + '.php')});
-${this.root} = array_merge(${this.root}, ${getNamespace(preprocesser)}\\process(${this.root}));`
+            code: `
+            const {process} = require('${preprocesser}');
+            ${this.root} = Object.assign(${this.root}, process(${this.root}));
+            `
         });
     }
 
     toString() {
-        return this.buffer
+        const code = this.buffer
             .map(a => a.code + (a.type === CodeType.line ? ';' : ''))
             .join('\n');
+
+        return `
+        const ${U} = require('json-mirror-compiler/lib/js/runtime/MirrorUtil');
+        module.exports = function (${this.root}) {
+            ${code}
+        };
+        `;
     }
 }
