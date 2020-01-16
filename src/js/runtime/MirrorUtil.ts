@@ -12,7 +12,13 @@ export function get(obj: any, path: string[]) {
 }
 
 export function set(obj: any, path: string[], value: any) {
+
+    if (!obj) {
+        obj = isNaN(+path[0]) ? {} : [];
+    }
+
     let target = obj;
+
     path.forEach((key, index) => {
         if (index === path.length - 1) {
             target[key] = value;

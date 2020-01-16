@@ -30,7 +30,7 @@ export default class CodeBuffer {
     constructor(options?: CodeBufferOptions) {
         this.buffer = [{
             type: CodeType.line,
-            code: `var $newData = {}`
+            code: `var $newData`
         }];
         this.trackerIndex = 0;
         this.root = options.root || '$tplData';
@@ -278,7 +278,7 @@ export default class CodeBuffer {
     }
 
     transfromSetter(to: string[], setter: string, content: string) {
-        return `${U}.set(${setter}, [${to.map(t => /^\$/.test(t) ? t : json2js(t)).join(', ')}], ${content})`
+        return `${setter} = ${U}.set(${setter}, [${to.map(t => /^\$/.test(t) ? t : json2js(t)).join(', ')}], ${content})`
     }
 
     addPreprocesser(preprocesser: string) {
