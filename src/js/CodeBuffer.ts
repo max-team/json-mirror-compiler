@@ -300,6 +300,7 @@ export default class CodeBuffer {
         const ${U} = require('json-mirror-compiler/lib/js/runtime/MirrorUtil');
         module.exports = function (${this.root}) {
             ${code}
+            return $newData;
         };
         `;
     }
