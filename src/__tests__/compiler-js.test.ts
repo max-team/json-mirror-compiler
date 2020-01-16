@@ -12,7 +12,7 @@ describe('compiler', () => {
             source: `{"#/title": "#/main_title"}`
         });
 
-        expect(result.code.js).toContain('var $newData = {};');
+        expect(result.code.js).toContain('var $newData;');
     });
 
     it('string pointer', () => {
