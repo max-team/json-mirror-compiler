@@ -285,7 +285,7 @@ export default class CodeBuffer {
         this.buffer.push({
             type: CodeType.raw,
             code: `
-            const {process} = require('${preprocesser}');
+            const {process} = require('${preprocesser.replace(/\.ts$/, '')}');
             ${this.root} = Object.assign(${this.root}, process(${this.root}));
             `
         });
