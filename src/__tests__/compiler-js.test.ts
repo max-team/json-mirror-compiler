@@ -50,13 +50,22 @@ describe('compiler', () => {
             source: `{
                 "#/text1": "tel:{{#/tel/0/hot}}",
                 "#/text2": "tel:{{ #/tel/0/hot }}abc {{ #/aa/1/sj}} 666",
-                "#/text3": "tel:{{ #/tel/0/hot }}abc {{ #/aa/1/sj}} 666 {{ cc/2/kkk}} 777 "
+                "#/text3": "tel:{{ #/tel/0/hot }}abc {{ #/aa/1/sj}} 666 {{ cc/2/kkk}} 777 ",
+                "#/objA": {
+                    "$from": "#/objB",
+                    "$data": {
+                        "$mirror": {
+                            "#/title": "{{#/main_title}} 123"
+                        }
+                    }
+                }
             }`
         });
 
-        expect(result.code.js).toContain("legoMirrorUtil.set($newData, ['text1'], 'tel:' + legoMirrorUtil.get($tplData, ['tel', '0', 'hot']));");
-        expect(result.code.js).toContain("legoMirrorUtil.set($newData, ['text2'], 'tel:' + legoMirrorUtil.get($tplData, ['tel', '0', 'hot']) + 'abc ' + legoMirrorUtil.get($tplData, ['aa', '1', 'sj']) + ' 666');");
-        expect(result.code.js).toContain("legoMirrorUtil.set($newData, ['text3'], 'tel:' + legoMirrorUtil.get($tplData, ['tel', '0', 'hot']) + 'abc ' + legoMirrorUtil.get($tplData, ['aa', '1', 'sj']) + ' 666 {{ cc/2/kkk}} 777 ');");
+        expect(result.code.js).toContain("legoMirrorUtil.set($newData, ['text1'], 'tel:' + (legoMirrorUtil.get($tplData, ['tel', '0', 'hot']) || ''));");
+        expect(result.code.js).toContain("legoMirrorUtil.set($newData, ['text2'], 'tel:' + (legoMirrorUtil.get($tplData, ['tel', '0', 'hot']) || '') + 'abc ' + (legoMirrorUtil.get($tplData, ['aa', '1', 'sj']) || '') + ' 666');");
+        expect(result.code.js).toContain("legoMirrorUtil.set($newData, ['text3'], 'tel:' + (legoMirrorUtil.get($tplData, ['tel', '0', 'hot']) || '') + 'abc ' + (legoMirrorUtil.get($tplData, ['aa', '1', 'sj']) || '') + ' 666 {{ cc/2/kkk}} 777 ');");
+        expect(result.code.js).toContain("$newData['objA'] =");
     });
 
     it('copy action - object', () => {

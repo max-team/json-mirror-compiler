@@ -224,7 +224,7 @@ export default class CodeBuffer {
         for (let i = 0; i < array.length; i++) {
             let item = array[i];
             if (item.type === 'val') {
-                let valCode = this.transformGetter(getPath(item.val), getter, true);
+                let valCode = `(${this.transformGetter(getPath(item.val), getter, true)} || '')`;
                 code += valCode;
             }
             else {
