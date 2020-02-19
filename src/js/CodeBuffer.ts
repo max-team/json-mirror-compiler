@@ -186,7 +186,8 @@ export default class CodeBuffer {
      * @param parentPath
      */
     fromMustache(from: string, to: string[], parentPath?: ParentPath) {
-        const {getter, setter} = this.getParams(parentPath, true);
+        const {getter} = this.getParams(parentPath, true);
+        const {setter} = this.getParams(parentPath);
         let regExp = /{{\s*#\/.+?(?=}})/g;
         // 通过正则匹配得到变量数组
         let varArray = from.match(regExp);
