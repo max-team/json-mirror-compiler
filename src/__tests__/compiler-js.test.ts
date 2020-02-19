@@ -20,7 +20,7 @@ describe('compiler', () => {
             source: `{"#/title": "#/main_title"}`
         });
 
-        expect(result.code.js).toContain("legoMirrorUtil.set($newData, ['title'], $tplData['main_title']);");
+        expect(result.code.js).toContain("legoMirrorUtil.set($newData, ['title'], legoMirrorUtil.get($tplData, ['main_title']));");
     });
 
     it('string constant', () => {
@@ -54,9 +54,9 @@ describe('compiler', () => {
             }`
         });
 
-        expect(result.code.js).toContain("legoMirrorUtil.set($newData, ['text1'], 'tel:' + $tplData['tel']['0']['hot']);");
-        expect(result.code.js).toContain("legoMirrorUtil.set($newData, ['text2'], 'tel:' + $tplData['tel']['0']['hot'] + 'abc ' + $tplData['aa']['1']['sj'] + ' 666');");
-        expect(result.code.js).toContain("legoMirrorUtil.set($newData, ['text3'], 'tel:' + $tplData['tel']['0']['hot'] + 'abc ' + $tplData['aa']['1']['sj'] + ' 666 {{ cc/2/kkk}} 777 ');");
+        expect(result.code.js).toContain("legoMirrorUtil.set($newData, ['text1'], 'tel:' + legoMirrorUtil.get($tplData, ['tel', '0', 'hot']));");
+        expect(result.code.js).toContain("legoMirrorUtil.set($newData, ['text2'], 'tel:' + legoMirrorUtil.get($tplData, ['tel', '0', 'hot']) + 'abc ' + legoMirrorUtil.get($tplData, ['aa', '1', 'sj']) + ' 666');");
+        expect(result.code.js).toContain("legoMirrorUtil.set($newData, ['text3'], 'tel:' + legoMirrorUtil.get($tplData, ['tel', '0', 'hot']) + 'abc ' + legoMirrorUtil.get($tplData, ['aa', '1', 'sj']) + ' 666 {{ cc/2/kkk}} 777 ');");
     });
 
     it('copy action - object', () => {
@@ -75,7 +75,7 @@ describe('compiler', () => {
         expect(result.code.js).toContain('if (legoMirrorUtil.get($tplData, [\'objB\']) != null)');
         expect(result.code.js).toContain('if (legoMirrorUtil.get($newData, [\'objA\']) == null)');
         expect(result.code.js).toContain(`legoMirrorUtil.set($newData, ['objA'], {});`);
-        expect(result.code.js).toContain(`legoMirrorUtil.set($newData['objA'], ['title'], $tplData['objB']['main_title']);`);
+        expect(result.code.js).toContain(`legoMirrorUtil.set($newData['objA'], ['title'], legoMirrorUtil.get($tplData['objB'], ['main_title']));`);
 
     });
 
@@ -132,7 +132,7 @@ describe('compiler', () => {
                 }
             }`
         });
-        expect(result.code.js).toContain(`legoMirrorUtil.set($newData['arrA'][$i], ['image'], $tplData['image']);`);
-        expect(result.code.js).toContain(`legoMirrorUtil.set($newData['arrA'][$i], ['des'], $tplData['objB'][$i]['des']);`);
+        expect(result.code.js).toContain(`legoMirrorUtil.set($newData['arrA'][$i], ['image'], legoMirrorUtil.get($tplData, ['image']));`);
+        expect(result.code.js).toContain(`legoMirrorUtil.set($newData['arrA'][$i], ['des'], legoMirrorUtil.get($tplData['objB'][$i], ['des']));`);
     });
 });

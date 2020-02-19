@@ -186,7 +186,7 @@ export default class CodeBuffer {
      * @param parentPath
      */
     fromMustache(from: string, to: string[], parentPath?: ParentPath) {
-        const {getter,setter} = this.getParams(parentPath);
+        const {getter, setter} = this.getParams(parentPath, true);
         let regExp = /{{\s*#\/.+?(?=}})/g;
         // 通过正则匹配得到变量数组
         let varArray = from.match(regExp);
@@ -223,7 +223,7 @@ export default class CodeBuffer {
         for (let i = 0; i < array.length; i++) {
             let item = array[i];
             if (item.type === 'val') {
-                let valCode = this.transformGetter(getPath(item.val), getter);
+                let valCode = this.transformGetter(getPath(item.val), getter, true);
                 code += valCode;
             }
             else {
@@ -245,7 +245,7 @@ export default class CodeBuffer {
         const { getter, setter } = this.getParams(parentPath);
         let p = {
             type: CodeType.line,
-            code: this.transfromSetter(to, setter, this.transformGetter(from, getter))
+            code: this.transfromSetter(to, setter, this.transformGetter(from, getter, true))
         };
         this.buffer.push(p);
     }
