@@ -26,6 +26,7 @@ export default class CodeBuffer {
     buffer: Buffer;
     root: string;
     filePath: string;
+    target: string;
 
     constructor(options?: CodeBufferOptions) {
         this.buffer = [{
@@ -35,6 +36,7 @@ export default class CodeBuffer {
         this.trackerIndex = 0;
         this.root = options.root || '$tplData';
         this.filePath = options.filePath;
+        this.target = options.target;
     }
 
     walk(mirror: Mirror, parentPath?: ParentPath) {
@@ -297,12 +299,16 @@ export default class CodeBuffer {
             .map(a => a.code + (a.type === CodeType.line ? ';' : ''))
             .join('\n');
 
-        return `
-        const ${U} = require('json-mirror-compiler/lib/js/runtime/MirrorUtil');
-        module.exports = function (${this.root}) {
-            ${code}
-            return $newData;
-        };
-        `;
+        return this.target === 'commonjs'
+            ? `
+const ${U} = require('json-mirror-compiler/lib/js/runtime/MirrorUtil');
+module.exports = function (${this.root}) {
+    ${code}
+    return $newData;
+};
+            ` : `
+${code}
+return $newData;
+            `;
     }
 }
