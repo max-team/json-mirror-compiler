@@ -8,6 +8,7 @@ export function compile(
         rootVar?: string;
         format?: 'json' | 'json5' | 'yaml';
         filePath?: string;
+        target?: 'commonjs' | 'amd';
     }
 ): {code: string; errors?: object[];} {
 
@@ -18,13 +19,15 @@ export function compile(
         source,
         rootVar,
         format = 'json',
-        filePath
+        filePath,
+        target = 'commonjs'
     } = options;
 
     const res = compileTarget(source, CodeBuffer, {
         rootVar,
         filePath,
-        format
+        format,
+        target
     });
     code = res.code;
     res.errors && errors.push(...res.errors);

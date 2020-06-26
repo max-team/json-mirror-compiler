@@ -3,7 +3,7 @@
  * @author cxtom(cxtom2008@gmail.com)
  */
 
-import { compile } from '../index';
+import { compile, compileJS } from '../index';
 
 describe('compiler', () => {
 
@@ -144,4 +144,16 @@ describe('compiler', () => {
         expect(result.code.js).toContain(`legoMirrorUtil.set($newData['arrA'][$i], ['image'], legoMirrorUtil.get($tplData, ['image']));`);
         expect(result.code.js).toContain(`legoMirrorUtil.set($newData['arrA'][$i], ['des'], legoMirrorUtil.get($tplData['objB'][$i], ['des']));`);
     });
+
+    it('amd js', () => {
+        const result = compileJS({
+            source: `{"#/title": "#/main_title"}`,
+            target: 'amd'
+        });
+
+        expect(result.code).toContain('var $newData;');
+        expect(result.code).toContain('return $newData;');
+        expect(result.code).not.toContain('module.exports');
+        expect(result.code).not.toContain('require(\'json-mirror-compiler/lib/js/runtime/MirrorUtil\')');
+    })
 });
