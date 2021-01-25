@@ -81,3 +81,5 @@ coverage
 /docs
 /lib
 bak
+
+.history
