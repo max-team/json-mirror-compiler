@@ -9,6 +9,8 @@ export function compile(
         format?: 'json' | 'json5' | 'yaml';
         filePath?: string;
         target?: 'commonjs' | 'amd';
+        // set absolute path prefix for dep module
+        publicPath?: string;
     }
 ): {code: string; errors?: object[];} {
 
@@ -20,14 +22,16 @@ export function compile(
         rootVar,
         format = 'json',
         filePath,
-        target = 'commonjs'
+        target = 'commonjs',
+        publicPath
     } = options;
 
     const res = compileTarget(source, CodeBuffer, {
         rootVar,
         filePath,
         format,
-        target
+        target,
+        publicPath
     });
     code = res.code;
     res.errors && errors.push(...res.errors);

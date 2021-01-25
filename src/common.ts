@@ -21,6 +21,7 @@ export function compileTarget(
         format: string;
         getNamespace?: (file: string) => string;
         target?: 'commonjs' | 'amd';
+        publicPath?: string;
     }
 ): {code: string; errors?: object[];} {
     const {
@@ -30,7 +31,8 @@ export function compileTarget(
     const buffer = new CodeBuffer({
         root: options.rootVar,
         filePath: options.filePath,
-        target: options.target
+        target: options.target,
+        publicPath: options.publicPath
     });
     let json: Mirror;
 
