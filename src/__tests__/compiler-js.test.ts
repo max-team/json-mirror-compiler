@@ -155,5 +155,14 @@ describe('compiler', () => {
         expect(result.code).toContain('return $newData;');
         expect(result.code).not.toContain('module.exports');
         expect(result.code).not.toContain('require(\'json-mirror-compiler/lib/js/runtime/MirrorUtil\')');
-    })
+    });
+
+    it('set publicPath', () => {
+        const result = compileJS({
+            source: `{"#/title": "#/main_title"}`,
+            publicPath: '../../node_modules'
+        });
+
+        expect(result.code).toContain(`const legoMirrorUtil = require('../../node_modules/json-mirror-compiler/lib/js/runtime/MirrorUtil');`);
+    });
 });

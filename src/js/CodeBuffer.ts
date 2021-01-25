@@ -27,6 +27,7 @@ export default class CodeBuffer {
     root: string;
     filePath: string;
     target: string;
+    publicPath: string;
 
     constructor(options?: CodeBufferOptions) {
         this.buffer = [{
@@ -37,6 +38,11 @@ export default class CodeBuffer {
         this.root = options.root || '$tplData';
         this.filePath = options.filePath;
         this.target = options.target;
+
+        this.publicPath = options.publicPath || '';
+        if (this.publicPath && !this.publicPath.endsWith('/')) {
+            this.publicPath = this.publicPath + '/';
+        }
     }
 
     walk(mirror: Mirror, parentPath?: ParentPath) {
@@ -301,7 +307,7 @@ export default class CodeBuffer {
 
         return this.target === 'commonjs'
             ? `
-const ${U} = require('json-mirror-compiler/lib/js/runtime/MirrorUtil');
+const ${U} = require('${this.publicPath}json-mirror-compiler/lib/js/runtime/MirrorUtil');
 module.exports = function (${this.root}) {
     ${code}
     return $newData;
