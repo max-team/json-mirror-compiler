@@ -21,6 +21,8 @@ export function compileTarget(
         format: string;
         getNamespace?: (file: string) => string;
         target?: 'commonjs' | 'amd';
+        legoId?: string;
+        cssFileContent?: string;
         publicPath?: string;
     }
 ): {code: string; errors?: object[];} {
@@ -32,6 +34,8 @@ export function compileTarget(
         root: options.rootVar,
         filePath: options.filePath,
         target: options.target,
+        legoId: options.legoId,
+        cssFileContent: options.cssFileContent,
         publicPath: options.publicPath
     });
     let json: Mirror;
