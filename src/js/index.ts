@@ -6,6 +6,8 @@ export function compile(
     options: {
         source: string;
         rootVar?: string;
+        legoId?: string;
+        cssFileContent?: string;
         format?: 'json' | 'json5' | 'yaml';
         filePath?: string;
         target?: 'commonjs' | 'amd';
@@ -23,6 +25,8 @@ export function compile(
         format = 'json',
         filePath,
         target = 'commonjs',
+        legoId,
+        cssFileContent,
         publicPath
     } = options;
 
@@ -31,6 +35,8 @@ export function compile(
         filePath,
         format,
         target,
+        legoId,
+        cssFileContent,
         publicPath
     });
     code = res.code;

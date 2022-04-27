@@ -11,8 +11,35 @@ describe('compiler', () => {
         const result = compile({
             source: `{"#/title": "#/main_title"}`
         });
-
         expect(result.code.js).toContain('var $newData;');
+    });
+
+    it('css module预置', () => {
+        const result = compile({
+            legoId: '12301',
+            source: `
+            {
+                "#/title": "#/main_title",
+                "#/data/styles": "buttonPrimary"
+            }
+            `
+        });
+        expect(result.code.js).toContain("@baidu/cosmic-ui-search");
+    });
+
+    it('css module定制', () => {
+        const result = compile({
+            legoId: '12301',
+            cssFileContent: '.__button__xxx {"color": "red"}',
+            source: `
+            {
+                "#/title": "#/main_title",
+                "#/data/styles": "./buttonPrimary.less"
+            }
+            `
+        });
+        expect(result.code.js).toContain('12301.cssmodule.js');
+        expect(result.code.js).toContain('.__button__xxx');
     });
 
     it('string pointer', () => {
