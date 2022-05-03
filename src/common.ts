@@ -21,6 +21,8 @@ export function compileTarget(
         format: string;
         getNamespace?: (file: string) => string;
         target?: 'commonjs' | 'amd';
+        variable?: string;
+        afterProcess?: object;
         publicPath?: string;
     }
 ): {code: string; errors?: object[];} {
@@ -32,6 +34,8 @@ export function compileTarget(
         root: options.rootVar,
         filePath: options.filePath,
         target: options.target,
+        variable: options.variable,
+        afterProcess: options.afterProcess,
         publicPath: options.publicPath
     });
     let json: Mirror;

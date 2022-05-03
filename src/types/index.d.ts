@@ -24,6 +24,8 @@ interface ParentPath {
 interface CodeBufferOptions {
     root?: string;
     filePath?: string;
+    variable?: string;
+    afterProcess?: object;
     target?: 'commonjs' | 'amd';
     publicPath?: string;
 }

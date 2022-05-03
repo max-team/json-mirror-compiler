@@ -2,6 +2,8 @@ import {
     getPath,
     isPointer,
     getFromPath,
+    getVariable,
+    isVariable,
     isMustache
 } from '../utils';
 import json2js from './json2js';
@@ -28,6 +30,8 @@ export default class CodeBuffer {
     filePath: string;
     target: string;
     publicPath: string;
+    variable: string;
+    afterProcess: object;
 
     constructor(options?: CodeBufferOptions) {
         this.buffer = [{
@@ -37,8 +41,9 @@ export default class CodeBuffer {
         this.trackerIndex = 0;
         this.root = options.root || '$tplData';
         this.filePath = options.filePath;
+        this.variable = options.variable;
         this.target = options.target;
-
+        this.afterProcess = options.afterProcess;
         this.publicPath = options.publicPath || '';
         if (this.publicPath && !this.publicPath.endsWith('/')) {
             this.publicPath = this.publicPath + '/';
@@ -49,7 +54,10 @@ export default class CodeBuffer {
         for (let [to, from] of Object.entries(mirror)) {
             const toPath = getPath(to);
             if (typeof from === 'string') {
-                if (isPointer(from)) {
+                if (isVariable(from)) {
+                    this.variableProcess(from, toPath, parentPath);
+                }
+                else if (isPointer(from)) {
                     let fromPath = getFromPath(from as string, parentPath);
                     this.fromPath(fromPath.path, toPath, fromPath.parentPath);
                 }
@@ -258,7 +266,20 @@ export default class CodeBuffer {
         };
         this.buffer.push(p);
     }
-
+    /**
+     * 内部变量处理
+     * @param from
+     * @param to 
+     * @param parentPath 
+     */
+    variableProcess(from: string, to: string[], parentPath?: ParentPath) {
+        const { getter, setter } = this.getParams(parentPath);
+        const variable = getVariable(from);
+        this.buffer.push({
+            type: CodeType.line,
+            code: this.transfromSetter(to, setter, variable)
+        });
+    }
     getParams(parentPath?: ParentPath, isSecure = false) {
 
         let getter = this.root;
@@ -301,17 +322,21 @@ export default class CodeBuffer {
     }
 
     toString() {
+        const variable = this.variable ? `${this.variable}\n` : '\n';
         const code = this.buffer
             .map(a => a.code + (a.type === CodeType.line ? ';' : ''))
             .join('\n');
-
+        
         return this.target === 'commonjs'
             ? `
 const ${U} = require('${this.publicPath}json-mirror-compiler/lib/js/runtime/MirrorUtil');
-module.exports = function (${this.root}) {
+function process(${this.root}) {
+    ${variable}
     ${code}
     return $newData;
-};
+}
+Object.assign(process, ${JSON.stringify(this.afterProcess ? this.afterProcess : {})});
+module.exports = process;
             ` : `
 ${code}
 return $newData;

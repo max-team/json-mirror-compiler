@@ -11,8 +11,29 @@ describe('compiler', () => {
         const result = compile({
             source: `{"#/title": "#/main_title"}`
         });
-
         expect(result.code.js).toContain('var $newData;');
+    });
+
+    it('string variable', () => {
+        const result = compile({
+            variable: 'var button = {"button": "__button__xxx"}',
+            afterProcess: {
+                '$styles': {
+                    12301: {
+                        ids: ["12301:0"],
+                        css: '.__button__xxx {"color": "red"}'
+                    }
+                }
+            },
+            source: `
+            {
+                "#/src": "#/src",
+                "#/data/styles": "$/button"
+            }
+            `
+        });
+        expect(result.code.js).toContain('var button = {"button": "__button__xxx"}');
+        expect(result.code.js).toContain("$newData = legoMirrorUtil.set($newData, ['data', 'styles'], button);");
     });
 
     it('string pointer', () => {

@@ -6,6 +6,8 @@ export function compile(
     options: {
         source: string;
         rootVar?: string;
+        variable?: string;
+        afterProcess?: object;
         format?: 'json' | 'json5' | 'yaml';
         filePath?: string;
         target?: 'commonjs' | 'amd';
@@ -23,6 +25,8 @@ export function compile(
         format = 'json',
         filePath,
         target = 'commonjs',
+        variable,
+        afterProcess,
         publicPath
     } = options;
 
@@ -31,6 +35,8 @@ export function compile(
         filePath,
         format,
         target,
+        variable,
+        afterProcess,
         publicPath
     });
     code = res.code;
