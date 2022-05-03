@@ -14,32 +14,26 @@ describe('compiler', () => {
         expect(result.code.js).toContain('var $newData;');
     });
 
-    it('css module预置', () => {
+    it('string variable', () => {
         const result = compile({
-            legoId: '12301',
+            variable: 'var button = {"button": "__button__xxx"}',
+            afterProcess: {
+                '$styles': {
+                    12301: {
+                        ids: ["12301:0"],
+                        css: '.__button__xxx {"color": "red"}'
+                    }
+                }
+            },
             source: `
             {
-                "#/title": "#/main_title",
-                "#/data/styles": "buttonPrimary"
+                "#/src": "#/src",
+                "#/data/styles": "$/button"
             }
             `
         });
-        expect(result.code.js).toContain("@baidu/cosmic-ui-search");
-    });
-
-    it('css module定制', () => {
-        const result = compile({
-            legoId: '12301',
-            cssFileContent: '.__button__xxx {"color": "red"}',
-            source: `
-            {
-                "#/title": "#/main_title",
-                "#/data/styles": "./buttonPrimary.less"
-            }
-            `
-        });
-        expect(result.code.js).toContain('12301.cssmodule.js');
-        expect(result.code.js).toContain('.__button__xxx');
+        expect(result.code.js).toContain('var button = {"button": "__button__xxx"}');
+        expect(result.code.js).toContain("$newData = legoMirrorUtil.set($newData, ['data', 'styles'], button);");
     });
 
     it('string pointer', () => {

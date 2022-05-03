@@ -1,4 +1,5 @@
 const pointerReg = /^#\//;
+const variableReg = /^\$\//;
 
 /**
  * 判断是否是 #/ 路径语法
@@ -7,6 +8,15 @@ const pointerReg = /^#\//;
  */
 export function isPointer(s: any) {
     return typeof s === 'string' && pointerReg.test(s);
+}
+
+/**
+ * 判断是否是 $/ 路径语法
+ * 
+ * @param {any} s
+ */
+export function isVariable(s: any) {
+    return typeof s === 'string' && variableReg.test(s);
 }
 
 /**
@@ -21,6 +31,10 @@ export function isMustache(s: any) {
 export function getPath(str: string) {
     let path = str.replace(pointerReg, '').split('/').filter(a => a);
     return path;
+}
+
+export function getVariable(str: string) {
+    return str.replace(variableReg, '');
 }
 
 export function getFromPath(str: string, parentPath: ParentPath) {

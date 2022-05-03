@@ -24,8 +24,8 @@ interface ParentPath {
 interface CodeBufferOptions {
     root?: string;
     filePath?: string;
-    legoId?: string;
-    cssFileContent?: string;
+    variable?: string;
+    afterProcess?: object;
     target?: 'commonjs' | 'amd';
     publicPath?: string;
 }

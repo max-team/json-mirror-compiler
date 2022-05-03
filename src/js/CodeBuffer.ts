@@ -2,6 +2,8 @@ import {
     getPath,
     isPointer,
     getFromPath,
+    getVariable,
+    isVariable,
     isMustache
 } from '../utils';
 import json2js from './json2js';
@@ -28,8 +30,8 @@ export default class CodeBuffer {
     filePath: string;
     target: string;
     publicPath: string;
-    legoId: string;
-    cssFileContent: string;
+    variable: string;
+    afterProcess: object;
 
     constructor(options?: CodeBufferOptions) {
         this.buffer = [{
@@ -39,9 +41,9 @@ export default class CodeBuffer {
         this.trackerIndex = 0;
         this.root = options.root || '$tplData';
         this.filePath = options.filePath;
-        this.legoId = options.legoId;
+        this.variable = options.variable;
         this.target = options.target;
-        this.cssFileContent = options.cssFileContent;
+        this.afterProcess = options.afterProcess;
         this.publicPath = options.publicPath || '';
         if (this.publicPath && !this.publicPath.endsWith('/')) {
             this.publicPath = this.publicPath + '/';
@@ -52,8 +54,8 @@ export default class CodeBuffer {
         for (let [to, from] of Object.entries(mirror)) {
             const toPath = getPath(to);
             if (typeof from === 'string') {
-                if (toPath[toPath.length - 1] === 'styles') {
-                    this.customStyle(from, toPath, parentPath);
+                if (isVariable(from)) {
+                    this.variableProcess(from, toPath, parentPath);
                 }
                 else if (isPointer(from)) {
                     let fromPath = getFromPath(from as string, parentPath);
@@ -265,25 +267,18 @@ export default class CodeBuffer {
         this.buffer.push(p);
     }
     /**
-     * 外观定制
+     * 内部变量处理
      * @param from
      * @param to 
      * @param parentPath 
      */
-    customStyle(from: string, to: string[], parentPath?: ParentPath) {
+    variableProcess(from: string, to: string[], parentPath?: ParentPath) {
         const { getter, setter } = this.getParams(parentPath);
-        if (from.includes('/')) {
-            this.buffer.push({
-                type: CodeType.line,
-                code: this.transfromSetter(to, setter, `require("./${this.legoId}.cssmodule.js")`)
-            });
-        }
-        else {
-            this.buffer.push({
-                type: CodeType.line,
-                code: this.transfromSetter(to, setter, `require("@baidu/cosmic-ui-search")["${from}"]`)
-            });
-        }
+        const variable = getVariable(from);
+        this.buffer.push({
+            type: CodeType.line,
+            code: this.transfromSetter(to, setter, variable)
+        });
     }
     getParams(parentPath?: ParentPath, isSecure = false) {
 
@@ -327,23 +322,20 @@ export default class CodeBuffer {
     }
 
     toString() {
+        const variable = this.variable ? `${this.variable}\n` : '\n';
         const code = this.buffer
             .map(a => a.code + (a.type === CodeType.line ? ';' : ''))
             .join('\n');
-        const css = this.cssFileContent ? {
-            [this.legoId]: {
-                ids: [`${this.legoId}:0`],
-                styles: this.cssFileContent
-            }
-        } : undefined;
+        
         return this.target === 'commonjs'
             ? `
 const ${U} = require('${this.publicPath}json-mirror-compiler/lib/js/runtime/MirrorUtil');
 function process(${this.root}) {
+    ${variable}
     ${code}
     return $newData;
 }
-process.$styles = ${JSON.stringify(css)};
+Object.assign(process, ${JSON.stringify(this.afterProcess ? this.afterProcess : {})});
 module.exports = process;
             ` : `
 ${code}

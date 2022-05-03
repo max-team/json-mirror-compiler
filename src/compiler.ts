@@ -17,8 +17,8 @@ export default function compile(
         rootVar?: string;
         format?: 'json' | 'json5' | 'yaml';
         filePath?: string;
-        legoId?: string;
-        cssFileContent?: string;
+        variable?: string;
+        afterProcess?: object;
         target?: {
             php: boolean;
             js: boolean;
@@ -35,8 +35,8 @@ export default function compile(
         rootVar,
         format = 'json',
         filePath,
-        legoId,
-        cssFileContent,
+        variable,
+        afterProcess,
         target = {php: true, js: true},
         getNamespace
     } = options;
@@ -56,8 +56,8 @@ export default function compile(
                 rootVar,
                 format,
                 filePath,
-                legoId,
-                cssFileContent,
+                variable,
+                afterProcess,
                 getNamespace
             });
             code[key] = res.code;
