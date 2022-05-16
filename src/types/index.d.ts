@@ -23,6 +23,7 @@ interface ParentPath {
 
 interface CodeBufferOptions {
     root?: string;
+    ext?: string;
     filePath?: string;
     variable?: string;
     afterProcess?: object;

@@ -27,6 +27,7 @@ export default class CodeBuffer {
 
     buffer: Buffer;
     root: string;
+    ext: string;
     filePath: string;
     target: string;
     publicPath: string;
@@ -40,6 +41,7 @@ export default class CodeBuffer {
         }];
         this.trackerIndex = 0;
         this.root = options.root || '$tplData';
+        this.ext = options.ext || '$ext';
         this.filePath = options.filePath;
         this.variable = options.variable;
         this.target = options.target;
@@ -316,7 +318,7 @@ export default class CodeBuffer {
             type: CodeType.raw,
             code: `
             const {process} = require('${preprocesser.replace(/\.ts$/, '')}');
-            ${this.root} = Object.assign(${this.root}, process(${this.root}));
+            ${this.root} = Object.assign(${this.root}, process(${this.root}, ${this.ext}));
             `
         });
     }
@@ -330,7 +332,7 @@ export default class CodeBuffer {
         return this.target === 'commonjs'
             ? `
 const ${U} = require('${this.publicPath}json-mirror-compiler/lib/js/runtime/MirrorUtil');
-function process(${this.root}) {
+function process(${this.root}, ${this.ext}) {
     ${variable}
     ${code}
     return $newData;
