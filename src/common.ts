@@ -17,6 +17,7 @@ export function compileTarget(
     CodeBuffer: any,
     options: {
         rootVar: string;
+        extVar?: string;
         filePath: string;
         format: string;
         getNamespace?: (file: string) => string;
@@ -32,6 +33,7 @@ export function compileTarget(
     } = options;
     const buffer = new CodeBuffer({
         root: options.rootVar,
+        ext: options.extVar,
         filePath: options.filePath,
         target: options.target,
         variable: options.variable,

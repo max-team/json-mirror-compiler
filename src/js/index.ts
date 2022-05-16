@@ -6,6 +6,7 @@ export function compile(
     options: {
         source: string;
         rootVar?: string;
+        extVar?: string;
         variable?: string;
         afterProcess?: object;
         format?: 'json' | 'json5' | 'yaml';
@@ -22,6 +23,7 @@ export function compile(
     const {
         source,
         rootVar,
+        extVar,
         format = 'json',
         filePath,
         target = 'commonjs',
@@ -32,6 +34,7 @@ export function compile(
 
     const res = compileTarget(source, CodeBuffer, {
         rootVar,
+        extVar,
         filePath,
         format,
         target,

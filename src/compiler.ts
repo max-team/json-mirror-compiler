@@ -15,6 +15,7 @@ export default function compile(
     options: {
         source: string;
         rootVar?: string;
+        extVar?: string;
         format?: 'json' | 'json5' | 'yaml';
         filePath?: string;
         variable?: string;
